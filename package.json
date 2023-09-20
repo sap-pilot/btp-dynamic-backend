@@ -16,9 +16,38 @@
   },
   "scripts": {
     "start": "cds-serve",
+    "build": "mbt build -p=cf --mtar=IAM-DynamicBackend.mtar",
+    "bd": "mbt build -p=cf --mtar=BTP-DynamicBackend.mtar && cf deploy mta_archives/BTP-DynamicBackend.mtar -f --retries 1",
+    "undeploy": "cf undeploy BTP-DynamicBackend --delete-services --delete-service-keys -f",
     "watch-diagnosis": "cds watch --open diagnosis/webapp/index.html?sap-ui-xx-viewCache=false"
   },
   "sapux": [
     "app/diagnosis"
-  ]
+  ],
+  "cds": {
+    "features": {
+      "fetch_csrf": true
+    },
+    "auth": {
+      "passport": {
+        "strategy": "xsuaa"
+      }
+    },
+    "requires": {
+      "uaa": {
+        "kind": "xsuaa"
+      },
+      "API_S4_HTTP_BASIC": {
+        "kind": "odata-v2",
+        "credentials": {
+          "destination": "API_S4_HTTP_BASIC",
+          "path": "/sap/opu/odata/sap/ESH_SEARCH_SRV",
+          "forwardAuthToken": true
+        }
+      }
+    },
+    "odata": {
+      "version": "v4"
+    }
+  }
 }
