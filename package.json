@@ -1,13 +1,16 @@
 {
   "name": "BTP-DynamicBackend",
   "version": "1.0.0",
-  "description": "BTP sample dynamic backend CAP and UI5 project to support CAP/hub/multi-backend pattern.",
+  "description": "BTP sample dynamic backend CAP and UI5 project to showcase CAP/hub/multi-backend pattern.",
   "repository": "<Add your repository here>",
   "license": "UNLICENSED",
   "private": true,
   "dependencies": {
     "@sap/cds": "^7",
-    "express": "^4"
+    "@sap/xsenv": "^4.0.0",
+    "@sap/xssec": "^3.3.4",
+    "express": "^4",
+    "passport": "^0.6.0"
   },
   "devDependencies": {
     "@cap-js/sqlite": "^1",
@@ -16,9 +19,10 @@
   },
   "scripts": {
     "start": "cds-serve",
-    "build": "mbt build -p=cf --mtar=IAM-DynamicBackend.mtar",
+    "build": "mbt build -p=cf --mtar=BTP-DynamicBackend.mtar",
     "bd": "mbt build -p=cf --mtar=BTP-DynamicBackend.mtar && cf deploy mta_archives/BTP-DynamicBackend.mtar -f --retries 1",
     "undeploy": "cf undeploy BTP-DynamicBackend --delete-services --delete-service-keys -f",
+    "gen-env": "CF_APP_NAME=BTP-DynamicBackend-srv && curl https://raw.githubusercontent.com/sap-pilot/btp-util/main/cf/gen-default-env.js | node",
     "watch-diagnosis": "cds watch --open diagnosis/webapp/index.html?sap-ui-xx-viewCache=false"
   },
   "sapux": [

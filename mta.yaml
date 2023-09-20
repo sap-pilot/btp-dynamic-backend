@@ -3,137 +3,128 @@ _schema-version: '3.1'
 ID: BTP-DynamicBackend
 version: 1.0.0
 description: "BTP sample dynamic backend CAP and UI5 project to support CAP/hub/multi-backend pattern."
-parameters:
-  enable-parallel-deployments: true
-build-parameters:
-  before-all:
-    - builder: custom
-      commands:
-        - npx cds build --production
 modules:
-  - name: BTP-DynamicBackend-srv
-    type: nodejs
-    path: gen/srv
-    parameters:
-      buildpack: nodejs_buildpack
-    build-parameters:
-      builder: npm
-    provides:
-      - name: srv-api # required by consumers of CAP services (e.g. approuter)
-        properties:
-          srv-url: ${default-url}
-    requires: 
-      - name: BTP-DynamicBackend-uaa
-      - name: BTP-DynamicBackend-conn
-      - name: BTP-DynamicBackend-dest
-    build-parameters:
-      ignore:
+- name: BTP-DynamicBackend-srv
+  type: nodejs
+  path: gen/srv
+  parameters:
+    buildpack: nodejs_buildpack
+  provides:
+    - name: srv-api # required by consumers of CAP services (e.g. approuter)
+      properties:
+        srv-url: ${default-url}
+  requires: 
+    - name: BTP-DynamicBackend-uaa
+    - name: BTP-DynamicBackend-conn
+    - name: BTP-DynamicBackend-dest
+  build-parameters:
+    ignore:
+    - default-*.json
+    - .env
+    - '*node_modules*'
+- name: BTP-DynamicBackend-app
+  type: approuter.nodejs
+  path: app/approuter
+  build-parameters:
+    builder: custom
+    commands:
+      - npm ci
+      - npm run build
+    ignore:
       - default-*.json
       - .env
-      - '*node_modules*'
-  - name: BTP-DynamicBackend-app
-    type: approuter.nodejs
-    path: app/approuter
-    build-parameters:
-      builder: custom
-      commands:
-        - npm ci
-        - npm run build
-      ignore:
-        - default-*.json
-        - .env
-        - "*node_modules*"
-    parameters:
-      memory: 256M
-      host: btp-dynamicbackend-${space}
-      disk-quota: 256M
-      keep-existing-routes: true
-    requires:
-      - name: BTP-DynamicBackend-uaa
-      - name: BTP-DynamicBackend-dest
-      - name: BTP-DynamicBackend-conn
-      - name: srv-api
-        group: destinations
-        properties:
-          name: srv-api
-          url: ~{srv-url}
-          timeout: 600000
-          forwardAuthToken: true
-  - name: BTP-DynamicBackend-dest-content
-    type: com.sap.application.content
-    requires:
-    - name: srv-api
-    - name: BTP-DynamicBackend-dest
-      parameters:
-        content-target: true
+      - "*node_modules*"
+  parameters:
+    memory: 256M
+    host: btp-dynamicbackend-${space}
+    disk-quota: 256M
+    keep-existing-routes: true
+  requires:
     - name: BTP-DynamicBackend-uaa
-      parameters:
-        service-key:
-          name: BTP-DynamicBackend-uaa-key
+    - name: BTP-DynamicBackend-dest
+    - name: BTP-DynamicBackend-conn
+    - name: srv-api
+      group: destinations
+      properties:
+        name: srv-api
+        url: ~{srv-url}
+        timeout: 600000
+        forwardAuthToken: true
+- name: BTP-DynamicBackend-dest-content
+  type: com.sap.application.content
+  requires:
+  - name: srv-api
+  - name: BTP-DynamicBackend-dest
     parameters:
-      content:
+      content-target: true
+  - name: BTP-DynamicBackend-uaa
+    parameters:
+      service-key:
+        name: BTP-DynamicBackend-uaa-key
+  parameters:
+    content:
+      instance:
+        destinations:
+        - Authentication: OAuth2UserTokenExchange
+          Name: BTP-DynamicBackend-uaa
+          ServiceInstanceName: BTP-DynamicBackend-uaa
+          ServiceKeyName: BTP-DynamicBackend-uaa-key
+          sap.cloud.service: cvx.poc.dynamicbackend
+        - Authentication: OAuth2ClientCredentials
+          Description: BTP-DynamicBackend CAP service
+          HTML5.DynamicDestination: true
+          HTML5.ForwardAuthToken: true
+          Name: BTP-DynamicBackend-srv
+          ServiceInstanceName: BTP-DynamicBackend-uaa
+          ServiceKeyName: BTP-DynamicBackend-uaa-key
+          sap.cloud.service: cvx.poc.dynamicbackend
+          URL: ~{srv-api/srv-url}
+        existing_destinations_policy: update
+  build-parameters:
+    no-source: true
+resources:
+- name: BTP-DynamicBackend-dest
+  type: org.cloudfoundry.managed-service
+  parameters:
+    config:
+      HTML5Runtime_enabled: true
+      init_data:
         instance:
           destinations:
-          - Authentication: OAuth2UserTokenExchange
-            Name: BTP-DynamicBackend-uaa
-            ServiceInstanceName: BTP-DynamicBackend-uaa
-            ServiceKeyName: BTP-DynamicBackend-uaa-key
-            sap.cloud.service: cvx.poc.dynamicbackend
-          - Authentication: OAuth2ClientCredentials
+          - Name: BTP-DynamicBackend-srv
+            Authentication: NoAuthentication
             Description: BTP-DynamicBackend CAP service
             HTML5.DynamicDestination: true
             HTML5.ForwardAuthToken: true
-            Name: BTP-DynamicBackend-srv
-            ServiceInstanceName: BTP-DynamicBackend-uaa
-            ServiceKeyName: BTP-DynamicBackend-uaa-key
-            sap.cloud.service: cvx.poc.dynamicbackend
+            ProxyType: Internet
+            Type: HTTP
             URL: ~{srv-api/srv-url}
           existing_destinations_policy: update
-    build-parameters:
-      no-source: true
-resources:
-  - name: BTP-DynamicBackend-dest
-    type: org.cloudfoundry.managed-service
-    parameters:
-      config:
-        HTML5Runtime_enabled: true
-        init_data:
-          instance:
-            destinations:
-            - Name: BTP-DynamicBackend-srv
-              Authentication: NoAuthentication
-              Description: BTP-DynamicBackend CAP service
-              HTML5.DynamicDestination: true
-              HTML5.ForwardAuthToken: true
-              ProxyType: Internet
-              Type: HTTP
-              URL: ~{srv-api/srv-url}
-            existing_destinations_policy: update
-      service: destination
-      service-name: BTP-DynamicBackend-dest
-      service-plan: lite
-    requires:
-    - name: srv-api
-  - name: BTP-DynamicBackend-uaa
-    type: org.cloudfoundry.managed-service
-    parameters:
-      config:
-        xsappname: BTP-DynamicBackend-${space}
-      path: ./xs-security.json
-      service: xsuaa
-      service-name: BTP-DynamicBackend-uaa
-      service-plan: application
-  - name: BTP-DynamicBackend-conn
-    type: org.cloudfoundry.managed-service
-    parameters:
-      service: connectivity
-      service-plan: lite
+    service: destination
+    service-name: BTP-DynamicBackend-dest
+    service-plan: lite
+  requires:
+  - name: srv-api
+- name: BTP-DynamicBackend-uaa
+  type: org.cloudfoundry.managed-service
   parameters:
-    deploy_mode: html5-repo
-    enable-parallel-deployments: true
-  build-parameters:
-    before-all:
-    - builder: custom
-      commands:
-      - npm ci
-      - npx -p @sap/cds-dk cds build --production
+    config:
+      xsappname: BTP-DynamicBackend-${space}
+    path: ./xs-security.json
+    service: xsuaa
+    service-name: BTP-DynamicBackend-uaa
+    service-plan: application
+- name: BTP-DynamicBackend-conn
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: connectivity
+    service-plan: lite
+parameters:
+  deploy_mode: html5-repo
+  enable-parallel-deployments: true
+build-parameters:
+  before-all:
+  - builder: custom
+    commands:
+    - npm ci
+    - npx -p @sap/cds-dk cds build --production
