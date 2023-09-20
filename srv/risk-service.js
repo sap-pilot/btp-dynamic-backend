@@ -1,26 +1,39 @@
 
 const cds = require('@sap/cds')
 
+const resolveDestination = function(request, requiredDestination) {
+    const destDef = cds.env.requires[requiredDestination];
+    const destOverrides = request.req.query.destOverrides; // take url parameter "destOverrides": CSV string of OLD_DEST|NEW_DEST
+    if (!destOverrides || !destDef || !destDef.credentials || !destDef.credentials.destination)
+        return requiredDestination; // nothing to override
+    // need to override destination, copy config first
+    const newDestDef = JSON.parse(JSON.stringify(destDef));
+    const destMap = {}; // OLD_DEST : NEW_DEST map
+    const aOverrides = destOverrides.split(",");
+    for ( const override of aOverrides) {
+        const pair = override.split("|");
+        if ( pair.length == 2 ) {
+            destMap[pair[0]] = pair[1];
+        } else {
+            console.log("# cannot recognize destOverride pair ["+override+"]");
+        }
+    }
+    const newDest = destMap[newDestDef.credentials.destination];
+    if (newDest) {
+        console.log("# override destination [" + newDestDef.credentials.destination + "] with [" + newDest + "]");
+        newDestDef.credentials.destination = newDest;
+    }
+    return newDestDef;
+}
+
 /**
  * Implementation for Risk Management service defined in ./risk-service.cds
  */
 module.exports = cds.service.impl(async function () {
     this.on('READ', 'Diagnosis', async function (req) {
         console.log("# reading diagnosis");
-        const destDef = cds.env.requires['API_S4_HTTP_BASIC'] //defined in package.json
-        const destOverride = req.req.query.destination;
-        var service = null;
-        if (destDef && destOverride) {
-            const newDestDef = JSON.parse(JSON.stringify(destDef));
-            console.log("# override destination [" + newDestDef.credentials.destination + "] to [" + destOverride + "]");
-            newDestDef.credentials.destination = destOverride;
-            service = await cds.connect.to(newDestDef);
-        } else {
-            // no override, use normal destination
-            service = await cds.connect.to("API_S4_HTTP_BASIC");
-        }
-        const url = "/Diagnosis";
-        const result = await service.tx(req).get(url);
+        const service = await cds.connect.to(resolveDestination(req,"API_S4_HTTP_BASIC"));
+        const result = await service.tx(req).get("/Diagnosis");
         return result;
     });
 });

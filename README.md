@@ -1,23 +1,29 @@
 # Getting Started
 
-Welcome to your new project.
+BTP sample dynamic backend CAP and UI5 project to support CAP/hub/multi-backend pattern."
 
-It contains these folders and files, following our recommended project layout:
+## Build and deploy
 
-File or Folder | Purpose
----------|----------
-`app/` | content for UI frontends goes here
-`db/` | your domain models and data go here
-`srv/` | your service models and code go here
-`package.json` | project metadata and configuration
-`readme.md` | this getting started guide
+Run below commands to build and deploy this app
+```
+cf login
+npm install
+npm run bd
+```
 
+## Run
 
-## Next Steps
+After successful deployment, run below command to generate default-env.json for local testing:
+```
+export CF_APP_NAME=BTP-DynamicBackend-srv
+npm run gen-env
+cds watch
+```
 
-- Open a new terminal and run `cds watch` 
-- (in VS Code simply choose _**Terminal** > Run Task > cds watch_)
-- Start adding content, for example, a [db/schema.cds](db/schema.cds).
+Open browser and enter below URL to test destination override via URL parameter "destOverrides" - below query overrides destination API_S4_HTTP_BASIC_CPIUSER with API_S4_HTTP_BASIC_APPDEVUSER 
+```
+http://localhost:4004/odata/v4/service/risk/Diagnosis?destOverrides=API_S4_HTTP_BASIC_CPIUSER|API_S4_HTTP_BASIC_APPDEVUSER
+```
 
 
 ## Learn More
