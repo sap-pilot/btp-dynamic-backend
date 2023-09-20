@@ -1,5 +1,14 @@
 using RiskService from './risk-service';
 
+annotate RiskService.Diagnosis with {
+	System       @title: 'System';
+	Mandt        @title: 'Client';
+	MessageId       @title: 'MessageId';
+	Type        @title: 'Type';
+	TimeRange      @title: 'TimeRange';
+	Icon        @title: 'Icon';
+}
+
 annotate RiskService.Risks with {
 	title       @title: 'Title';
 	prio        @title: 'Priority';
