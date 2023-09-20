@@ -6,6 +6,8 @@
   "license": "UNLICENSED",
   "private": true,
   "dependencies": {
+    "@sap-cloud-sdk/http-client": "^3.5.0",
+    "@sap-cloud-sdk/resilience": "^3.5.0",
     "@sap/cds": "^7",
     "@sap/xsenv": "^4.0.0",
     "@sap/xssec": "^3.3.4",
@@ -22,16 +24,13 @@
     "build": "mbt build -p=cf --mtar=BTP-DynamicBackend.mtar",
     "bd": "mbt build -p=cf --mtar=BTP-DynamicBackend.mtar && cf deploy mta_archives/BTP-DynamicBackend.mtar -f --retries 1",
     "undeploy": "cf undeploy BTP-DynamicBackend --delete-services --delete-service-keys -f",
-    "gen-env": "CF_APP_NAME=BTP-DynamicBackend-srv && curl https://raw.githubusercontent.com/sap-pilot/btp-util/main/cf/gen-default-env.js | node",
+    "gen-env": "CF_APP_NAME=BTP-DynamicBackend-srv curl https://raw.githubusercontent.com/sap-pilot/btp-util/main/cf/gen-default-env.js | node",
     "watch-diagnosis": "cds watch --open diagnosis/webapp/index.html?sap-ui-xx-viewCache=false"
   },
   "sapux": [
     "app/diagnosis"
   ],
   "cds": {
-    "features": {
-      "fetch_csrf": true
-    },
     "auth": {
       "passport": {
         "strategy": "xsuaa"
@@ -44,7 +43,7 @@
       "API_S4_HTTP_BASIC": {
         "kind": "odata-v2",
         "credentials": {
-          "destination": "API_S4_HTTP_BASIC",
+          "destination": "API_S4_HTTP_BASIC_CPIUSER",
           "path": "/sap/opu/odata/sap/ESH_SEARCH_SRV",
           "forwardAuthToken": true
         }

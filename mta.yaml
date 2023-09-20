@@ -65,16 +65,16 @@ modules:
     content:
       instance:
         destinations:
-        - Authentication: OAuth2UserTokenExchange
-          Name: BTP-DynamicBackend-uaa
+        - Name: BTP-DynamicBackend-uaa
+          Authentication: OAuth2UserTokenExchange
           ServiceInstanceName: BTP-DynamicBackend-uaa
           ServiceKeyName: BTP-DynamicBackend-uaa-key
           sap.cloud.service: cvx.poc.dynamicbackend
-        - Authentication: OAuth2ClientCredentials
+        - Name: BTP-DynamicBackend-srv
+          Authentication: OAuth2ClientCredentials
           Description: BTP-DynamicBackend CAP service
           HTML5.DynamicDestination: true
           HTML5.ForwardAuthToken: true
-          Name: BTP-DynamicBackend-srv
           ServiceInstanceName: BTP-DynamicBackend-uaa
           ServiceKeyName: BTP-DynamicBackend-uaa-key
           sap.cloud.service: cvx.poc.dynamicbackend
@@ -88,18 +88,6 @@ resources:
   parameters:
     config:
       HTML5Runtime_enabled: true
-      init_data:
-        instance:
-          destinations:
-          - Name: BTP-DynamicBackend-srv
-            Authentication: NoAuthentication
-            Description: BTP-DynamicBackend CAP service
-            HTML5.DynamicDestination: true
-            HTML5.ForwardAuthToken: true
-            ProxyType: Internet
-            Type: HTTP
-            URL: ~{srv-api/srv-url}
-          existing_destinations_policy: update
     service: destination
     service-name: BTP-DynamicBackend-dest
     service-plan: lite
