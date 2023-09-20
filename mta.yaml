@@ -24,7 +24,7 @@ modules:
     - '*node_modules*'
 - name: BTP-DynamicBackend-app
   type: approuter.nodejs
-  path: app/approuter
+  path: app
   build-parameters:
     builder: custom
     commands:

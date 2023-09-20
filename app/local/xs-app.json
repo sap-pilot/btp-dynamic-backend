@@ -1,0 +1,26 @@
+{
+    "welcomeFile": "index.html",
+    "authenticationMethod": "none",
+    "logout": {
+        "logoutEndpoint": "/do/logout"
+    },
+    "routes": [
+        {
+            "source": "^/user-api(.*)",
+            "target": "$1",
+            "service": "sap-approuter-userapi"
+        },
+        {
+            "source": "^/diagnosis(.*)$",
+            "target": "$1",
+            "localDir": "../diagnosis/webapp",
+            "authenticationType": "none"
+        },
+        {
+            "source": "^/(.*)$",
+            "target": "$1",
+            "localDir": "../flp",
+            "authenticationType": "none"
+        }
+    ]
+}

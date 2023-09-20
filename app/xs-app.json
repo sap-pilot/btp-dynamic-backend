@@ -13,9 +13,21 @@
             "csrfProtection": false
         },
         {
+            "source": "^/user-api(.*)",
+            "target": "$1",
+            "service": "sap-approuter-userapi"
+        },
+        {
+            "source": "^/diagnosis(.*)$",
+            "target": "$1",
+            "localDir": "./diagnosis/webapp",
+            "authenticationType": "xsuaa"
+        },
+        {
             "source": "^/(.*)$",
-            "authenticationType": "xsuaa",
-            "localDir": "resources"
+            "target": "$1",
+            "localDir": "./flp",
+            "authenticationType": "xsuaa"
         }
     ]
 }

@@ -5,6 +5,7 @@
     "scripts": {
         "custom": "node custom.js",
         "build": "mkdir -p resources && cp index.html ./resources",
-        "start": "node node_modules/@sap/approuter/approuter.js"
+        "start": "node node_modules/@sap/approuter/approuter.js",
+        "start-local": "node node_modules/@sap/approuter/approuter.js -w ./local"
     }
 }
