@@ -1,6 +1,6 @@
 using {cvx.poc.riskmanagement as my} from '../db/schema';
 
-@path: 'service/risk'
+@path: '/srv-api'
 service RiskService {
   
   entity Risks       as projection on my.Risks;

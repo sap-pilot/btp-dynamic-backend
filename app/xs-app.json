@@ -6,8 +6,8 @@
     },
     "routes": [
         {
-            "source": "^(.*)/srv/(.*)$",
-            "target": "/odata/v4/service/risk/$2",
+            "source": "^(.*)/srv-api/(.*)$",
+            "target": "/srv-api/$2",
             "authenticationType": "xsuaa",
             "destination": "srv-api",
             "csrfProtection": false

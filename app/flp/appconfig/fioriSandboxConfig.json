@@ -17,7 +17,7 @@
                   "tileType": "sap.ushell.ui.tile.StaticTile",
                   "properties": {
                     "title": "ESH Diagnosis",
-                    "targetURL": "#ESH-diagnosis"
+                    "targetURL": "#ESH-diagnosis?destOverrides=API_S4_HTTP_BASIC_CPIUSER|API_S4_HTTP_BASIC_APPDEVUSER"
                   }
                 }
               ]
@@ -41,12 +41,7 @@
               "title": "ESH Diagnosis",
               "signature": {
                 "parameters": {
-                  "Books.ID": {
-                    "renameTo": "ID"
-                  },
-                  "Authors.books.ID": {
-                    "renameTo": "ID"
-                  }
+                  "destOverrides": {}
                 },
                 "additionalParameters": "ignored"
               },

@@ -26,10 +26,6 @@ modules:
   type: approuter.nodejs
   path: app
   build-parameters:
-    builder: custom
-    commands:
-      - npm ci
-      - npm run build
     ignore:
       - default-*.json
       - .env
