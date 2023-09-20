@@ -1,0 +1,43 @@
+{
+  "xsappname": "BTP-DynamicBackend",
+  "tenant-mode": "dedicated",
+  "description": "BTP sample dynamic backend CAP and UI5 project to support CAP/hub/multi-backend pattern.",
+  "scopes": [
+    {
+      "name": "uaa.user",
+      "description": "UAA"
+    },
+    {
+      "name": "$XSAPPNAME.admin",
+      "description": "BTP user offboarding admin user scope"
+    }
+  ],
+  "attributes": [
+    {
+      "name": "BusinessUnit",
+      "valueType": "string",
+      "valueRequired": "false"
+    }
+  ],
+  "role-templates": [
+    {
+      "name": "Token_Exchange",
+      "description": "UAA",
+      "scope-references": [
+        "uaa.user"
+      ]
+    },
+    {
+      "name": "BTP-DynamicBackend",
+      "description": "BTP user offboarding admin role template",
+      "scope-references": [
+        "$XSAPPNAME.admin"
+      ],
+      "attribute-references": [
+        {
+          "name": "BusinessUnit"
+        }
+      ]
+    }
+  ]
+}

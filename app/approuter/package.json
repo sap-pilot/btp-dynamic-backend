@@ -1,0 +1,10 @@
+{
+    "dependencies": {
+        "@sap/approuter": "^14.3.2"
+    },
+    "scripts": {
+        "custom": "node custom.js",
+        "build": "mkdir -p resources && cp index.html ./resources",
+        "start": "node node_modules/@sap/approuter/approuter.js"
+    }
+}

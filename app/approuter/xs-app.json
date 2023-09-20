@@ -1,0 +1,21 @@
+{
+    "welcomeFile": "index.html",
+    "authenticationMethod": "route",
+    "logout": {
+        "logoutEndpoint": "/do/logout"
+    },
+    "routes": [
+        {
+            "source": "^(.*)/srv/(.*)$",
+            "target": "/odata/v4/service/risk/$2",
+            "authenticationType": "xsuaa",
+            "destination": "srv-api",
+            "csrfProtection": false
+        },
+        {
+            "source": "^/(.*)$",
+            "authenticationType": "xsuaa",
+            "localDir": "resources"
+        }
+    ]
+}

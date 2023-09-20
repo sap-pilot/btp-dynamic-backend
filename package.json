@@ -1,7 +1,7 @@
 {
   "name": "BTP-DynamicBackend",
   "version": "1.0.0",
-  "description": "A simple CAP project.",
+  "description": "BTP sample dynamic backend CAP and UI5 project to support CAP/hub/multi-backend pattern.",
   "repository": "<Add your repository here>",
   "license": "UNLICENSED",
   "private": true,
