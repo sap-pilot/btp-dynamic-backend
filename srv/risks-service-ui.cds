@@ -9,6 +9,20 @@ annotate RiskService.Diagnosis with {
 	Icon        @title: 'Icon';
 }
 
+annotate RiskService.Diagnosis with @(
+	UI: {
+		LineItem: [
+			{Value: System},
+			{Value: Mandt},
+			{Value: MessageId},
+			{Value: Type},
+			{Value: TimeRange}
+		],
+	},
+) {
+
+};
+
 annotate RiskService.Risks with {
 	title       @title: 'Title';
 	prio        @title: 'Priority';

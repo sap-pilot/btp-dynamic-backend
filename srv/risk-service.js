@@ -33,7 +33,10 @@ module.exports = cds.service.impl(async function () {
     this.on('READ', 'Diagnosis', async function (req) {
         console.log("# reading diagnosis");
         const service = await cds.connect.to(resolveDestination(req,"API_S4_HTTP_BASIC"));
-        const result = await service.tx(req).get("/Diagnosis");
+        const result = await service.tx(req).get("/Diagnosis"); // service.run(req.query);
+        if  (result && result.length)
+            result.$count = result.length; // add inline $count otherise fiori element page wont show result
+        console.log("# result = "+JSON.stringify(result || {}))
         return result;
     });
 });

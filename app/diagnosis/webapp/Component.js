@@ -4,57 +4,48 @@ sap.ui.define(
         "use strict";
 
         return Component.extend("cvx.poc.diagnosis.Component", {
+
             metadata: {
                 manifest: "json"
             },
-            init: function () {
-                /*
-                 * getComponentData() returns an object like { startupParameters : { AAA : ["BBB"], DEF: ["HIJ","KLM"] } }
-                 * NOTE: parameters values are passed via arrays
-                */
-                // const oComponentData = this.getComponentData();
-                // console.log("# app was started with parameters " + JSON.stringify(oComponentData.startupParameters || {}));
-                // const oManifestUi5 = this.getMetadata().getManifestEntry("sap.ui5");
-                // console.log("# oManifestUi5: " + JSON.stringify(oManifestUi5 || {}));
-                // const oDataSources = this.getMetadata().getManifestEntry("sap.app").dataSources;
-                // console.log("# dataSource: " + JSON.stringify(oDataSources || {}));
-                // if ( oComponentData.startupParameters &&  oComponentData.startupParameters.destOverrides &&  oComponentData.startupParameters.destOverrides.length > 0 ) {
-                //     const destOverrides = oComponentData.startupParameters.destOverrides[0];
-                //     // insert override into main service url like /destOverrides[OLD_DEST|NEW_DEST]/srv-api]
-                //     const newUri = "/destOverrides["+destOverrides+"]/srv-api]";
-                //     console.log("# overriding mainService url from '"+oDataSources.mainService.uri+"' to '"+newUri+"'");
-                //     oDataSources.mainService.uri = newUri;
-                //     debugger;
-                //     // this.getModel().setHeaders({"X-DEST-OVERRIDES": destOverrides});
-                //     // if (!oManifestUi5.models[""].settings.serviceUrlParams)
-                //     //     oManifestUi5.models[""].settings.serviceUrlParams = {};
-                //     // if (!oManifestUi5.models[""].settings.metadataUrlParam)
-                //     //     oManifestUi5.models[""].settings.metadataUrlParams = {};
-                //     // oManifestUi5.models[""].settings.serviceUrlParams["destOverrides"] = destOverrides;
-                //     // oManifestUi5.models[""].settings.metadataUrlParams["destOverrides"] = destOverrides;
-                // }
-                Component.prototype.init.apply(this, arguments);
-            },
+
+            _sOriginSrvUri : null,
+            _sDestOverridenUri : null,
+
             initComponentModels: function() {
 
                 const oComponentData = this.getComponentData();
-                console.log("# app was started with parameters " + JSON.stringify(oComponentData.startupParameters || {}));
-                if ( oComponentData.startupParameters && oComponentData.startupParameters.destOverrides &&  oComponentData.startupParameters.destOverrides.length > 0 ) {
+
+                // note: only returned getManifestObject is editable (by reference))
+                const oMainService = this.getManifestObject().getEntry("/sap.app/dataSources").mainService || {};
+                const oManifestModels = this.getManifestObject().getEntry("/sap.ui5/models", true) || {};
+
+                // backup initial data
+                if (oMainService && oMainService.uri && !this._sOriginSrvUri)
+                    this._sOriginSrvUri = oMainService.uri;
+
+                // check & apply destOverrides param 
+                if ( oComponentData && oComponentData.startupParameters && oComponentData.startupParameters.destOverrides &&  oComponentData.startupParameters.destOverrides.length > 0 ) {
+
+                    // read startup param
                     const destOverrides = oComponentData.startupParameters.destOverrides[0];
                     console.log("# destOverrides = '"+destOverrides+"'");
-                    // note: only returned getManifestObject is editable (by reference)
-                    const oMainService = this.getManifestObject().getEntry("/sap.app/dataSources").mainService || {};
-                    //const newUri = "/destOverrides["+destOverrides+"]/srv-api]";
+                    // 
+                    
+                    // below only works if your CAP app serves ODataV4Model 
                     const newUri = "/srv-api/?destOverrides="+destOverrides; // add service url parameters
+                    this._sDestOverridenUri = newUri;
                     console.log("# overriding mainService url from '"+oMainService.uri+"' to '"+newUri+"'");
                     oMainService.uri = newUri;
+                    
+                    // below only works if your CAP app serves ODataV2Model (comment out in case of V4)                   
+                    // if (!oManifestModels[""].settings.serviceUrlParams)
+                    //     oManifestModels[""].settings.serviceUrlParams = {};
+                    // oManifestModels[""].settings.serviceUrlParams["destOverrides"] = destOverrides;
 
-                    // below only works for ODataV2Model
-                    // var oManifestModels = this._getManifestEntry("/sap.ui5/models", true) || {};
-                    // if (!oManifestModels[""].settings.metadataUrlParams)
-                    //     oManifestModels[""].settings.metadataUrlParams = {};
-                    // oManifestModels[""].settings.metadataUrlParams["destOverrides"] = destOverrides;
-                    // oManifestModels[""].serviceUrl = newUri;
+                } else if (this._sOriginSrvUri) {
+                    // restore original srvUri if no destOverrides param was specified 
+                    oMainService.uri = this._sOriginSrvUri;
                 }
             
                 // pass the models and data sources to the internal helper
