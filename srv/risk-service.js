@@ -2,8 +2,8 @@
 const cds = require('@sap/cds')
 
 const resolveDestination = function(request, requiredDestination) {
-    const destDef = cds.env.requires[requiredDestination];
-    const destOverrides = request.req.query.destOverrides; // take url parameter "destOverrides": CSV string of OLD_DEST|NEW_DEST
+    const destDef = cds.env.requires[requiredDestination]; // take destination config from package.json cds.requires 
+    const destOverrides = (request && request.req && request.req.query)? request.req.query.destOverrides : null; // take url parameter "destOverrides": CSV string of OLD_DEST|NEW_DEST
     if (!destOverrides || !destDef || !destDef.credentials || !destDef.credentials.destination)
         return requiredDestination; // nothing to override
     // need to override destination, copy config first

@@ -5,6 +5,6 @@
     "scripts": {
         "custom": "node custom.js",
         "start": "node node_modules/@sap/approuter/approuter.js",
-        "start-local": "node node_modules/@sap/approuter/approuter.js -w ./local"
+        "local": "node node_modules/@sap/approuter/approuter.js -w ./local"
     }
 }

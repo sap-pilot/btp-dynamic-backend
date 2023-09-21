@@ -22,6 +22,7 @@
   "scripts": {
     "start": "cds-serve",
     "build": "mbt build -p=cf --mtar=BTP-DynamicBackend.mtar",
+    "deploy": "cf deploy mta_archives/BTP-DynamicBackend.mtar -f --retries 1",
     "bd": "mbt build -p=cf --mtar=BTP-DynamicBackend.mtar && cf deploy mta_archives/BTP-DynamicBackend.mtar -f --retries 1",
     "undeploy": "cf undeploy BTP-DynamicBackend --delete-services --delete-service-keys -f",
     "gen-env": "CF_APP_NAME=BTP-DynamicBackend-srv curl https://raw.githubusercontent.com/sap-pilot/btp-util/main/cf/gen-default-env.js | node",
