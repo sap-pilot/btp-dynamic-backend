@@ -9,9 +9,6 @@ sap.ui.define(
                 manifest: "json"
             },
 
-            _sOriginSrvUri : null,
-            _sDestOverridenUri : null,
-
             initComponentModels: function() {
 
                 const oComponentData = this.getComponentData();
@@ -20,32 +17,28 @@ sap.ui.define(
                 const oMainService = this.getManifestObject().getEntry("/sap.app/dataSources").mainService || {};
                 const oManifestModels = this.getManifestObject().getEntry("/sap.ui5/models", true) || {};
 
-                // backup initial data
-                if (oMainService && oMainService.uri && !this._sOriginSrvUri)
-                    this._sOriginSrvUri = oMainService.uri;
-
                 // check & apply destOverrides param 
                 if ( oComponentData && oComponentData.startupParameters && oComponentData.startupParameters.destOverrides &&  oComponentData.startupParameters.destOverrides.length > 0 ) {
 
                     // read startup param
                     const destOverrides = oComponentData.startupParameters.destOverrides[0];
                     console.log("# destOverrides = '"+destOverrides+"'");
-                    // 
-                    
+
                     // below only works if your CAP app serves ODataV4Model 
                     const newUri = "/srv-api/?destOverrides="+destOverrides; // add service url parameters
-                    this._sDestOverridenUri = newUri;
                     console.log("# overriding mainService url from '"+oMainService.uri+"' to '"+newUri+"'");
+                    if (!oMainService.originUri)
+                        oMainService.originUri = oMainService.uri; // backup current uri
                     oMainService.uri = newUri;
                     
-                    // below only works if your CAP app serves ODataV2Model (comment out in case of V4)                   
+                    // below only works for ODataV2Model (uncomment below if you are using V2 CAP service)                   
                     // if (!oManifestModels[""].settings.serviceUrlParams)
                     //     oManifestModels[""].settings.serviceUrlParams = {};
                     // oManifestModels[""].settings.serviceUrlParams["destOverrides"] = destOverrides;
 
-                } else if (this._sOriginSrvUri) {
+                } else if (oMainService.originUri) {
                     // restore original srvUri if no destOverrides param was specified 
-                    oMainService.uri = this._sOriginSrvUri;
+                    oMainService.uri = oMainService.originUri;
                 }
             
                 // pass the models and data sources to the internal helper
