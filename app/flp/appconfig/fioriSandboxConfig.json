@@ -17,6 +17,16 @@
                   "tileType": "sap.ushell.ui.tile.StaticTile",
                   "properties": {
                     "title": "ESH Diagnosis",
+                    "info": "CPIUSER",
+                    "targetURL": "#ESH-diagnosis"
+                  }
+                },
+                {
+                  "id": "ESH-diagnosis",
+                  "tileType": "sap.ushell.ui.tile.StaticTile",
+                  "properties": {
+                    "title": "ESH Diagnosis",
+                    "info": "APPDEVUSER",
                     "targetURL": "#ESH-diagnosis?destOverrides=API_S4_HTTP_BASIC_CPIUSER|API_S4_HTTP_BASIC_APPDEVUSER"
                   }
                 }
