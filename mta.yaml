@@ -9,6 +9,8 @@ modules:
   path: gen/srv
   parameters:
     buildpack: nodejs_buildpack
+  properties:
+    DEST_OVERRIDE_WHITELIST_EXP: 'API_S4(.*)'
   provides:
     - name: srv-api # required by consumers of CAP services (e.g. approuter)
       properties:

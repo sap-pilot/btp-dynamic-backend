@@ -7,23 +7,33 @@ const resolveDestination = function(request, requiredDestination) {
     if (!destOverrides || !destDef || !destDef.credentials || !destDef.credentials.destination)
         return requiredDestination; // nothing to override
     // need to override destination, copy config first
+    const destOverrideWhitelistExp = process.env.DEST_OVERRIDE_WHITELIST_EXP;
+    let destExp = null;
+    if (!destOverrideWhitelistExp) {
+        console.log("# warning: no DEST_OVERRIDE_WHITELIST_EXP specified in ENV, all destOverrides are permitted now.")
+    } else {
+        destExp = new RegExp(destOverrideWhitelistExp,"i"); // case insensitive
+    }
     const newDestDef = JSON.parse(JSON.stringify(destDef));
     const destMap = {}; // OLD_DEST : NEW_DEST map
     const aOverrides = destOverrides.split(",");
     for ( const override of aOverrides) {
         const pair = override.split("|");
-        if ( pair.length == 2 ) {
-            destMap[pair[0]] = pair[1];
+        if ( pair.length == 2 && pair[0] === destDef.credentials.destination ) {
+            // found override now checking against whitelist
+            const newDest = pair[1];
+            if (destExp && !destExp.test(newDest)) {
+                console.log("# warning: destOverride '"+newDest+"' not allowed by DEST_OVERRIDE_WHITELIST_EXP '"+destOverrideWhitelistExp+"'");
+            } else {
+                console.log("# info: override destination [" + newDestDef.credentials.destination + "] with [" + newDest + "]");
+                newDestDef.credentials.destination = newDest;
+                return newDestDef;
+            }
         } else {
-            console.log("# cannot recognize destOverride pair ["+override+"]");
+            console.log("# warning: cannot recognize destOverride pair ["+override+"]");
         }
     }
-    const newDest = destMap[newDestDef.credentials.destination];
-    if (newDest) {
-        console.log("# override destination [" + newDestDef.credentials.destination + "] with [" + newDest + "]");
-        newDestDef.credentials.destination = newDest;
-    }
-    return newDestDef;
+    return requiredDestination; // no override found, returning original destinaion
 }
 
 /**
