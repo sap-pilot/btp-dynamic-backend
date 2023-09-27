@@ -1,29 +1,116 @@
 # Getting Started
 
-BTP sample dynamic backend CAP and UI5 project to support CAP/hub/multi-backend pattern."
+BTP sample dynamic backend CAP and UI5 project to support CAP/hub/multi-backend pattern.
 
-## Build and deploy
+## How it works
 
-Run below commands to build and deploy this app
+Open this app at the deployed approuter URL for instance: <br />
+https://btp-dynamicbackend-cf-aws-use-development-dcore.cfapps.us10.hana.ondemand.com/index.html#Shell-home
+
+![btp-dd-apps.png](/doc/img/btp-dd-apps.png)
+
+If you open **ESH Diagnostics - CPIUSER (DR1)** tile it will show ESH info loaded via API_S4_HTTP_BASIC_CPIUSER destination defined/hardcoded in [package.json](package.json). <br />
+![btp-dd-dr1.png](/doc/img/btp-dd-dr1.png)
+
+If you navigate back and open the second tile **ESH Diagnostics - APPDEVUSER (DRU)** browser will navigate to an URL like below with URL parem destOverrides=API_S4_HTTP_BASIC_CPIUSER|API_S4_HTTP_BASIC_APPDEVUSER which essentially tells the UI/CAP app to replace CPIUSER destination with APPDEVUSER destination during runtime: <br />
+https://btp-dynamicbackend-cf-aws-use-development-dcore.cfapps.us10.hana.ondemand.com/index.html#ESH-diagnosis?destOverrides=API_S4_HTTP_BASIC_CPIUSER%257CAPI_S4_HTTP_BASIC_APPDEVUSER&/?sap-iapp-state=TASWSQ4YQSVUCXXJRLKCDZ35Z32R5PKOV4SSCIZAG <br />
+![btp-dd-dru.png](/doc/img/btp-dd-dru.png)
+
+You can replace above URL param or create another tile via [/app/flp/appconfig/fioriSandboxConfig.json](/app/flp/appconfig/fioriSandboxConfig.json) to point to other destinations.
+
+**Note:** the target destination must be whitelisted in CAP service "User Provided Variables" so to prevent end-user from pointing the app to arbitrary destinations. the initial whitelist is defined in [mta.yaml](/mta.yaml) -> BTP-DynamicBackend-srv -> properties -> DEST_OVERRIDE_WHITELIST_EXP <br />
+![btp-dd-whitelist.png](/doc/img/btp-dd-whitelist.png)
+
+## How to adopt it in your app
+
+### Step 1 - Add npm package @sap-pilot/btp-util to your app
+
 ```
-cf login
-npm install
-npm run bd
+npm i @sap-pilot/btp-util
 ```
 
-## Run
+### Step 2 - Add resolveDestination to your CAP srv module when you connect to destination
 
-After successful deployment, run below command to generate default-env.json for local testing:
+Check [/srv/risk-service.js](/srv/risk-service.js) or following sample code:
 ```
-export CF_APP_NAME=BTP-DynamicBackend-srv
-npm run gen-env
-cds watch
+const {resolveDestination} = require('@sap-pilot/btp-util')
+
+module.exports = cds.service.impl(async function () {
+    this.on('READ', 'Diagnosis', async function (req) {        
+        // override destination and replace it with destOverrides specified URL paremter if applicable (deefault destination is API_S4_HTTP_BASIC specified in package.json)
+        const service = await cds.connect.to(resolveDestination(req,"API_S4_HTTP_BASIC"));
+        const result = await service.tx(req).get("/Diagnosis"); // service.run(req.query);
+        / ...
+    });
+});
 ```
 
-Open browser and enter below URL to test destination override via URL parameter "destOverrides" - below query overrides destination API_S4_HTTP_BASIC_CPIUSER with API_S4_HTTP_BASIC_APPDEVUSER 
+**Note:** the resolveDestination method code is availale in github: https://github.com/sap-pilot/btp-util/blob/main/index.js
+
+### Step 3 - Adjust Fiori Component.js to pass the destOverrides parameter
+
+Sample code - [/app/diagnosis/webapp/Component.js](/app/diagnosis/webapp/Component.js): <br />
+Note: you may want to uncomment OData V2 code and comment out V4 code if you are using OData V2 in yoour CAP app.
 ```
-http://localhost:4004/odata/v4/service/risk/Diagnosis?destOverrides=API_S4_HTTP_BASIC_CPIUSER|API_S4_HTTP_BASIC_APPDEVUSER
+sap.ui.define(
+    ["sap/fe/core/AppComponent"],
+    function (Component) {
+        "use strict";
+
+        return Component.extend("cvx.poc.diagnosis.Component", {
+
+            metadata: {
+                manifest: "json"
+            },
+
+            initComponentModels: function() {
+
+                const oComponentData = this.getComponentData();
+
+                // note: only returned getManifestObject is editable (by reference))
+                const oMainService = this.getManifestObject().getEntry("/sap.app/dataSources").mainService || {};
+                const oManifestModels = this.getManifestObject().getEntry("/sap.ui5/models", true) || {};
+
+                // check & apply destOverrides param 
+                if ( oComponentData && oComponentData.startupParameters && oComponentData.startupParameters.destOverrides &&  oComponentData.startupParameters.destOverrides.length > 0 ) {
+
+                    // read startup param
+                    const destOverrides = oComponentData.startupParameters.destOverrides[0];
+                    console.log("# destOverrides = '"+destOverrides+"'");
+
+                    // below only works if your CAP app serves ODataV4Model 
+                    const newUri = "/srv-api/?destOverrides="+destOverrides; // add service url parameters
+                    console.log("# overriding mainService url from '"+oMainService.uri+"' to '"+newUri+"'");
+                    if (!oMainService.originUri)
+                        oMainService.originUri = oMainService.uri; // backup current uri
+                    oMainService.uri = newUri;
+                    
+                    // below only works for ODataV2Model (uncomment below if you are using V2 CAP service)                   
+                    // if (!oManifestModels[""].settings.serviceUrlParams)
+                    //     oManifestModels[""].settings.serviceUrlParams = {};
+                    // oManifestModels[""].settings.serviceUrlParams["destOverrides"] = destOverrides;
+
+                } else if (oMainService.originUri) {
+                    // restore original srvUri if no destOverrides param was specified 
+                    oMainService.uri = oMainService.originUri;
+                }
+            
+                // pass the models and data sources to the internal helper
+                Component.prototype.initComponentModels.apply(this, arguments);
+            }
+        });
+    }
+);
 ```
+
+### Step 4 - Create a copy of your fiori tile with URL param destOverrides
+
+You can create a tile locally in approuter & flp sandbox to test like this -  [/app/flp/appconfig/fioriSandboxConfig.json](/app/flp/appconfig/fioriSandboxConfig.json)
+
+OR contact BTP team to create a copy of your app/tile in Launchpad content manager and add destOverrides URL param as needed. <br />
+![btp-dd-tile.png](/doc/img/btp-dd-tile.png)
+
+
 ## Limitations
 
 1. **Data persistency** - This sample code is more for "pass through scenarios" - eg: no backend related data persisted in HANA cloud. 
