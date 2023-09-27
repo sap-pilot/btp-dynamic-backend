@@ -12,8 +12,7 @@ https://btp-dynamicbackend-cf-aws-use-development-dcore.cfapps.us10.hana.ondeman
 If you open **ESH Diagnostics - CPIUSER (DR1)** tile it will show ESH info loaded via API_S4_HTTP_BASIC_CPIUSER destination defined/hardcoded in [package.json](package.json). <br />
 ![btp-dd-dr1.png](/doc/img/btp-dd-dr1.png)
 
-If you navigate back and open the second tile **ESH Diagnostics - APPDEVUSER (DRU)** browser will navigate to an URL like below with URL parem destOverrides=API_S4_HTTP_BASIC_CPIUSER|API_S4_HTTP_BASIC_APPDEVUSER which essentially tells the UI/CAP app to replace CPIUSER destination with APPDEVUSER destination during runtime: <br />
-https://btp-dynamicbackend-cf-aws-use-development-dcore.cfapps.us10.hana.ondemand.com/index.html#ESH-diagnosis?destOverrides=API_S4_HTTP_BASIC_CPIUSER%257CAPI_S4_HTTP_BASIC_APPDEVUSER&/?sap-iapp-state=TASWSQ4YQSVUCXXJRLKCDZ35Z32R5PKOV4SSCIZAG <br />
+If you navigate back and open the second tile **ESH Diagnostics - APPDEVUSER (DRU)** browser will navigate to an URL like below with URL parem **destOverrides=API_S4_HTTP_BASIC_CPIUSER|API_S4_HTTP_BASIC_APPDEVUSER** which essentially tells the UI/CAP app to replace CPIUSER destination with APPDEVUSER destination during runtime: <br /> 
 ![btp-dd-dru.png](/doc/img/btp-dd-dru.png)
 
 You can replace above URL param or create another tile via [/app/flp/appconfig/fioriSandboxConfig.json](/app/flp/appconfig/fioriSandboxConfig.json) to point to other destinations.
